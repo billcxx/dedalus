@@ -1,22 +1,6 @@
 """
-Dedalus script simulating a 2D periodic incompressible shear flow with a passive
-tracer field for visualization. This script demonstrates solving a 2D periodic
-initial value problem. It can be ran serially or in parallel, and uses the
-built-in analysis framework to save data snapshots to HDF5 files. The
-`plot_snapshots.py` script can be used to produce plots from the saved data.
-The simulation should take about 10 cpu-minutes to run.
-
-The initial flow is in the x-direction and depends only on z. The problem is
-non-dimensionalized usign the shear-layer spacing and velocity jump, so the
-resulting viscosity and tracer diffusivity are related to the Reynolds and
-Schmidt numbers as:
-
-    nu = 1 / Reynolds
-    D = nu / Schmidt
-
-To run and plot using e.g. 4 processes:
-    $ mpiexec -n 4 python3 shear_flow.py
-    $ mpiexec -n 4 python3 plot_snapshots.py snapshots/*.h5
+Initial condition: u flow alone x, dependent of z coordinate with slight perturbation
+BC: periodic along x and y, but have a gauge condition that average p=0
 """
 
 import numpy as np
@@ -78,6 +62,7 @@ u['g'][1] += 0.1 * np.sin(2*np.pi*x/Lx) * np.exp(-(z+0.5)**2/0.01)
 snapshots = solver.evaluator.add_file_handler('snapshots', sim_dt=0.1, max_writes=10)
 snapshots.add_task(s, name='tracer')
 snapshots.add_task(p, name='pressure')
+snapshots.add_task(u['g'][0], name='ux')
 snapshots.add_task(-d3.div(d3.skew(u)), name='vorticity')
 
 # CFL
